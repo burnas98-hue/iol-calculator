@@ -31,6 +31,8 @@ export default function App() {
   const [calcError, setCalcError] = useState<string | null>(null)
 
   function handleChange(field: keyof IOLInputs, value: string | boolean) {
+    // Заменяем запятую на точку для числовых полей (iOS-клавиатура может вводить запятую)
+    if (typeof value === 'string') value = value.replace(',', '.')
     setInputs(prev => ({ ...prev, [field]: value }))
     if (typeof value === 'string') {
       setErrors(prev => prev.filter(e => e.field !== field))
