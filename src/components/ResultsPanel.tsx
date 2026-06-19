@@ -30,7 +30,7 @@ export function ResultsPanel({ result, scenario }: Props) {
         <div className="flex items-start gap-3">
           <StatusIcon status={status} />
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">
+            <p className="text-sm font-medium text-app-muted">
               Рекомендуемая оптическая сила ИОЛ
             </p>
             <p className={cn('text-4xl font-bold mt-1 leading-none', statusColors[status].text)}>
@@ -107,7 +107,7 @@ function InputSummaryCard({ summary, scenario }: { summary: IOLCalculationResult
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white overflow-hidden">
-      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide px-4 py-2.5 border-b border-slate-100 bg-slate-50">
+      <p className="text-sm font-medium text-app-muted px-4 py-2.5 border-b border-app-border bg-white">
         Исходные данные
       </p>
       <div className="divide-y divide-slate-100">

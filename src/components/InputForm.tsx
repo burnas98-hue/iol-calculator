@@ -41,36 +41,44 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
     (values.fixationMethod === 'scleral_sutures' || values.fixationMethod === 'intrascleral')
 
   return (
-    <form onSubmit={e => { e.preventDefault(); onSubmit() }} className="space-y-5">
+    <form onSubmit={e => { e.preventDefault(); onSubmit() }} className="space-y-4">
 
       {/* ── 1. Клинический сценарий ────────────────────────────────────── */}
-      <fieldset className="bg-white rounded-xl border border-slate-200 p-5 space-y-3">
-        <legend className="text-sm font-semibold text-slate-700 px-1">Клинический сценарий</legend>
-        <div className="space-y-2">
+      <div className="bg-white rounded-2xl border border-app-border shadow-sm p-5 space-y-3">
+        <p className="text-base font-medium text-app-text">Клинический сценарий</p>
+        <div className="space-y-1.5">
           {(Object.keys(SCENARIO_LABELS) as ClinicalScenario[]).map((key, i) => (
             <label key={key} className={cn(
-              'flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors',
+              'flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all',
               values.scenario === key
-                ? 'border-medical-500 bg-medical-50'
-                : 'border-slate-200 hover:border-slate-300',
+                ? 'border-medical-400 bg-medical-50 shadow-sm'
+                : 'border-app-border hover:border-slate-300 hover:bg-app-bg',
             )}>
+              <span className={cn(
+                'mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                values.scenario === key ? 'border-medical-500' : 'border-slate-300',
+              )}>
+                {values.scenario === key && (
+                  <span className="w-2 h-2 rounded-full bg-medical-500" />
+                )}
+              </span>
               <input type="radio" name="scenario" value={key}
                 checked={values.scenario === key}
                 onChange={() => onChange('scenario', key)}
-                className="mt-0.5 accent-medical-600" />
+                className="sr-only" />
               <div>
-                <p className="text-sm font-medium text-slate-800">{i + 1}. {SCENARIO_LABELS[key]}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{SCENARIO_HINTS[key]}</p>
+                <p className="text-sm text-app-text">{i + 1}. {SCENARIO_LABELS[key]}</p>
+                <p className="text-xs text-app-muted mt-0.5">{SCENARIO_HINTS[key]}</p>
               </div>
             </label>
           ))}
         </div>
-      </fieldset>
+      </div>
 
       {/* ── 2. Биометрия ──────────────────────────────────────────────── */}
-      <fieldset className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <legend className="text-sm font-semibold text-slate-700 px-1">Биометрия глаза</legend>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="bg-white rounded-2xl border border-app-border shadow-sm p-5 space-y-4">
+        <p className="text-base font-medium text-app-text">Биометрия глаза</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
           {(['AL', 'K1', 'K2', 'ACD', 'aConst', 'targetRef'] as const).map(field => {
             const meta = FIELD_META[field]
             const fieldErr = err(field)
@@ -78,7 +86,7 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
             return (
               <div key={field} className="space-y-1">
                 <div className="flex items-center gap-1.5">
-                  <label htmlFor={field} className="text-sm font-medium text-slate-700">
+                  <label htmlFor={field} className="text-sm text-app-text">
                     {meta.label}
                     {!meta.required && (
                       <span className="ml-1.5 text-xs text-slate-400 font-normal">опционально</span>
@@ -90,7 +98,7 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
                   </button>
                 </div>
                 {isOpen && (
-                  <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">
+                  <p className="text-xs text-app-muted bg-app-bg rounded-lg px-3 py-2 border border-app-border">
                     {meta.hint}
                   </p>
                 )}
@@ -100,12 +108,12 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
                     onChange={e => onChange(field, e.target.value)}
                     placeholder={meta.required ? meta.placeholder : `${meta.placeholder} (необяз.)`}
                     className={cn(
-                      'w-full rounded-lg border px-3 py-2 text-sm bg-white transition-colors',
-                      'focus:outline-none focus:ring-2 focus:ring-medical-400',
+                      'w-full rounded-xl border px-3 py-2.5 text-sm bg-white transition-all',
+                      'focus:outline-none focus:ring-2 focus:ring-medical-400 focus:border-transparent',
                       meta.unit ? 'pr-10' : '',
                       fieldErr
-                        ? 'border-red-400 bg-red-50 text-red-900'
-                        : 'border-slate-300 text-slate-900',
+                        ? 'border-red-300 bg-red-50 text-red-900'
+                        : 'border-app-border text-app-text placeholder:text-app-muted',
                     )}
                   />
                   {meta.unit && (
@@ -119,11 +127,11 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
             )
           })}
         </div>
-      </fieldset>
+      </div>
 
       {/* ── 3. Клинические параметры ──────────────────────────────────── */}
-      <fieldset className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-        <legend className="text-sm font-semibold text-slate-700 px-1">Клинические параметры</legend>
+      <div className="bg-white rounded-2xl border border-app-border shadow-sm p-5 space-y-4">
+        <p className="text-base font-medium text-app-text">Клинические параметры</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <SelectField id="ethnicGroup" label="Этническая группа пациента"
@@ -148,8 +156,8 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
                 <label key={k} className={cn(
                   'flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm cursor-pointer transition-colors',
                   values.oilDensity === k
-                    ? 'border-orange-400 bg-orange-100 text-orange-800 font-medium'
-                    : 'border-slate-200 bg-white text-slate-700',
+                    ? 'border-orange-400 bg-orange-100 text-orange-800'
+                    : 'border-app-border bg-white text-app-text',
                 )}>
                   <input type="radio" name="oilDensity" value={k}
                     checked={values.oilDensity === k}
@@ -161,16 +169,16 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
             </div>
           </div>
         )}
-      </fieldset>
+      </div>
 
       {/* ── 4. Данные о дислоцированной ИОЛ (только сценарий 1) ───────── */}
       {values.scenario === 'dislocation' && (
-        <fieldset className="bg-white rounded-xl border border-slate-200 p-5 space-y-5">
-          <legend className="text-sm font-semibold text-slate-700 px-1">Данные о дислоцированной ИОЛ</legend>
+        <div className="bg-white rounded-2xl border border-app-border shadow-sm p-5 space-y-5">
+          <p className="text-base font-medium text-app-text">Данные о дислоцированной ИОЛ</p>
 
           {/* 4а. Известна ли оптическая сила? */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">Известна ли оптическая сила ИОЛ?</p>
+            <p className="text-sm text-app-text">Известна ли оптическая сила ИОЛ?</p>
             <YesNoToggle value={values.disloc_powerKnown}
               onChange={v => onChange('disloc_powerKnown', v)} name="disloc_powerKnown" />
           </div>
@@ -178,7 +186,7 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
           {/* 4б. Сила в диоптриях — если да */}
           {values.disloc_powerKnown && (
             <div className="space-y-1">
-              <label htmlFor="disloc_power" className="text-sm font-medium text-slate-700">
+              <label htmlFor="disloc_power" className="text-sm text-app-text">
                 Оптическая сила смещённой ИОЛ
               </label>
               <div className="relative max-w-[180px]">
@@ -200,19 +208,27 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
 
           {/* 4в. Направление смещения */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">Направление смещения</p>
+            <p className="text-sm text-app-text">Направление смещения</p>
             <div className="space-y-1.5">
               {(Object.keys(DISPLACEMENT_DIRECTION_LABELS) as DisplacementDirection[]).map((key, i) => (
                 <label key={key} className={cn(
-                  'flex items-center gap-2.5 px-3 py-2 rounded-lg border cursor-pointer text-sm transition-colors',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer text-sm transition-all',
                   values.disloc_direction === key
-                    ? 'border-medical-400 bg-medical-50 text-medical-800 font-medium'
-                    : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300',
+                    ? 'border-medical-400 bg-medical-50 text-medical-800'
+                    : 'border-app-border bg-white text-app-text hover:border-slate-300 hover:bg-app-bg',
                 )}>
+                  <span className={cn(
+                    'w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                    values.disloc_direction === key ? 'border-medical-500' : 'border-slate-300',
+                  )}>
+                    {values.disloc_direction === key && (
+                      <span className="w-2 h-2 rounded-full bg-medical-500" />
+                    )}
+                  </span>
                   <input type="radio" name="disloc_direction" value={key}
                     checked={values.disloc_direction === key}
                     onChange={() => onChange('disloc_direction', key)}
-                    className="accent-medical-600 shrink-0" />
+                    className="sr-only" />
                   {i + 1}. {DISPLACEMENT_DIRECTION_LABELS[key]}
                 </label>
               ))}
@@ -221,24 +237,28 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
 
           {/* 4г. Имплантировать новую ИОЛ? */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-700">Имплантировать новую ИОЛ?</p>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <p className="text-sm text-app-text">Имплантировать новую ИОЛ?</p>
+            <div className="flex gap-2">
               {[
-                { label: 'Да — удалить и имплантировать новую', val: true },
-                { label: 'Нет — репозиция (ремонт)', val: false },
+                { label: 'Да — имплантировать новую', val: true },
+                { label: 'Нет — репозиция', val: false },
               ].map(opt => (
                 <label key={String(opt.val)} className={cn(
-                  'flex items-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer text-sm font-medium transition-colors',
+                  'flex items-center gap-2 px-4 py-2.5 rounded-xl border cursor-pointer text-sm transition-all',
                   values.disloc_replaceIOL === opt.val
-                    ? opt.val
-                      ? 'border-medical-500 bg-medical-50 text-medical-700'
-                      : 'border-slate-500 bg-slate-100 text-slate-700'
-                    : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400',
+                    ? 'border-medical-400 bg-medical-50 text-medical-700'
+                    : 'border-app-border bg-white text-app-muted hover:border-slate-300',
                 )}>
+                  <span className={cn(
+                    'w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                    values.disloc_replaceIOL === opt.val ? 'border-medical-500' : 'border-slate-300',
+                  )}>
+                    {values.disloc_replaceIOL === opt.val && <span className="w-2 h-2 rounded-full bg-medical-500" />}
+                  </span>
                   <input type="radio" name="disloc_replaceIOL"
                     checked={values.disloc_replaceIOL === opt.val}
                     onChange={() => onChange('disloc_replaceIOL', opt.val)}
-                    className="accent-medical-600" />
+                    className="sr-only" />
                   {opt.label}
                 </label>
               ))}
@@ -260,13 +280,13 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
               )}
             </div>
           )}
-        </fieldset>
+        </div>
       )}
 
       {/* ── Метод фиксации для сценариев 2 и 3 ───────────────────────── */}
       {values.scenario !== 'dislocation' && (
-        <fieldset className="bg-white rounded-xl border border-slate-200 p-5 space-y-4">
-          <legend className="text-sm font-semibold text-slate-700 px-1">Метод фиксации ИОЛ</legend>
+        <div className="bg-white rounded-2xl border border-app-border shadow-sm p-5 space-y-4">
+          <p className="text-base font-medium text-app-text">Метод фиксации ИОЛ</p>
 
           <SelectField id="fixationMethod" label="Планируемый метод фиксации ИОЛ"
             hint="Определяет позицию линзы (ELP). Для нестандартных методов поправки — ⚠️ MOCK."
@@ -277,11 +297,11 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
           {isScleralFix && (
             <ScleralDistanceBlock values={values} err={err} onChange={onChange} />
           )}
-        </fieldset>
+        </div>
       )}
 
       <button type="submit"
-        className="w-full sm:w-auto px-8 py-3 rounded-xl bg-medical-600 hover:bg-medical-700 active:bg-medical-800 text-white font-semibold text-sm transition-colors shadow-sm">
+        className="w-full py-3 rounded-2xl bg-medical-600 hover:bg-medical-700 active:bg-medical-800 text-white font-semibold text-sm transition-all shadow-md hover:shadow-lg">
         Рассчитать
       </button>
     </form>
@@ -298,8 +318,8 @@ function ScleralDistanceBlock({
   onChange: (field: keyof IOLInputs, value: string | boolean) => void
 }) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
-      <p className="text-sm font-medium text-slate-700">
+    <div className="rounded-xl border border-app-border bg-app-bg p-4 space-y-3">
+      <p className="text-sm text-app-text">
         Использовать стандартное расстояние 2.0 мм от лимба?
       </p>
       <YesNoToggle value={values.useStandardScleralDist}
@@ -308,7 +328,7 @@ function ScleralDistanceBlock({
 
       {!values.useStandardScleralDist && (
         <div className="space-y-1 pt-1">
-          <label htmlFor="scleralDistance" className="text-sm font-medium text-slate-700">
+          <label htmlFor="scleralDistance" className="text-sm text-app-text">
             {FIELD_META.scleralDistance.label}
           </label>
           <div className="relative max-w-[160px]">
@@ -341,16 +361,22 @@ function YesNoToggle({ value, onChange, name }: {
   name: string
 }) {
   return (
-    <div className="flex gap-3">
+    <div className="flex gap-2">
       {[{ label: 'Да', val: true }, { label: 'Нет', val: false }].map(opt => (
         <label key={String(opt.val)} className={cn(
-          'flex items-center gap-2 px-4 py-2 rounded-lg border cursor-pointer text-sm font-medium transition-colors',
+          'flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer text-sm transition-all',
           value === opt.val
-            ? 'border-medical-500 bg-medical-50 text-medical-700'
-            : 'border-slate-300 bg-white text-slate-600 hover:border-slate-400',
+            ? 'border-medical-400 bg-medical-50 text-medical-700'
+            : 'border-app-border bg-white text-app-muted hover:border-slate-300',
         )}>
+          <span className={cn(
+            'w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+            value === opt.val ? 'border-medical-500' : 'border-slate-300',
+          )}>
+            {value === opt.val && <span className="w-2 h-2 rounded-full bg-medical-500" />}
+          </span>
           <input type="radio" name={name} checked={value === opt.val}
-            onChange={() => onChange(opt.val)} className="accent-medical-600" />
+            onChange={() => onChange(opt.val)} className="sr-only" />
           {opt.label}
         </label>
       ))}
@@ -371,19 +397,24 @@ function SelectField({ id, label, hint, value, onChange, options, openHints, onT
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-1.5">
-        <label htmlFor={id} className="text-sm font-medium text-slate-700">{label}</label>
+        <label htmlFor={id} className="text-sm text-app-text">{label}</label>
         <button type="button" onClick={() => onToggleHint(id)}
           className="text-slate-400 hover:text-slate-600 transition-colors">
           <HelpCircle size={14} />
         </button>
       </div>
       {openHints.has(id) && (
-        <p className="text-xs text-slate-500 bg-slate-50 rounded-lg px-3 py-2 border border-slate-100">{hint}</p>
+        <p className="text-xs text-app-muted bg-app-bg rounded-lg px-3 py-2 border border-app-border">{hint}</p>
       )}
-      <select id={id} value={value} onChange={e => onChange(e.target.value)}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-medical-400 transition-colors">
-        {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-      </select>
+      <div className="relative">
+        <select id={id} value={value} onChange={e => onChange(e.target.value)}
+          className="w-full appearance-none rounded-xl border border-app-border pl-3 pr-9 py-2.5 text-sm bg-white text-app-text focus:outline-none focus:ring-2 focus:ring-medical-400 focus:border-transparent transition-all">
+          {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </select>
+        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+        </span>
+      </div>
     </div>
   )
 }

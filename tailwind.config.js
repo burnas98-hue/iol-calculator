@@ -19,6 +19,13 @@ export default {
           800: '#10407c',
           900: '#123768',
         },
+        app: {
+          text:   '#27272A',
+          muted:  '#9F9FA9',
+          bg:     '#F6F6F7',
+          border: '#E4E4E7',
+          error:  '#C10007',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
