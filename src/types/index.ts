@@ -78,6 +78,7 @@ export interface FormulaResult {
 export interface IOLCalculationResult {
   srkt: FormulaResult
   abakarov: FormulaResult
+  referenceFormulas: FormulaResult[]   // Hoffer Q, Holladay 1, Haigis
   recommendedPower: number
   predictedRefraction: number
   status: ResultStatus

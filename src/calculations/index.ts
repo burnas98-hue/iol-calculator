@@ -1,5 +1,6 @@
 import { calculateSRKT, elpFromAConstant } from './srkt'
 import { calculateHolladay1Like } from './holladay1'
+import { calculateHofferQ, calculateHolladay1, calculateHaigis } from './reference'
 import {
   elpByFixation,
   ethnicELPDelta,
@@ -45,6 +46,11 @@ export function calculateIOL(inputs: IOLNumericInputs): IOLCalculationResult {
 
   const hasMockData = fixMock || vitMock || ethnicMock
 
+  // ─── 3б. Референсные формулы (без поправок на стекловидное тело/фиксацию) ─
+  const refHofferQ   = calculateHofferQ(AL, K1, K2, aConst, inputs.ACD, targetRef)
+  const refHolladay1 = calculateHolladay1(AL, K1, K2, aConst, inputs.ACD, targetRef)
+  const refHaigis    = calculateHaigis(AL, K1, K2, aConst, inputs.ACD, targetRef)
+
   // ─── 4. Рекомендация ─────────────────────────────────────────────────────
   const recommended = round2((srktP + abakarovP) / 2)
   const predRef = predictedRefraction(recommended, AL, K1, K2, elp)
@@ -60,6 +66,11 @@ export function calculateIOL(inputs: IOLNumericInputs): IOLCalculationResult {
   return {
     srkt: { formulaName: 'SRK/T', power: round2(srktP), elp: round2(elp), uncertainty, isMock: fixMock || vitMock || ethnicMock },
     abakarov: { formulaName: 'Holladay-like (Abakarov)', power: round2(abakarovP), elp: round2(elp), uncertainty, isMock: true },
+    referenceFormulas: [
+      { ...refHofferQ,   uncertainty: 0.5 },
+      { ...refHolladay1, uncertainty: 0.5 },
+      { ...refHaigis,    uncertainty: 0.5 },
+    ],
     recommendedPower: recommended,
     predictedRefraction: predRef,
     status: deriveStatus(recommended, AL),

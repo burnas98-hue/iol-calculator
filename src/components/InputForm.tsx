@@ -1,5 +1,4 @@
 import { HelpCircle } from 'lucide-react'
-import { useState } from 'react'
 import { FIELD_META } from '../data/units'
 import {
   SCENARIO_LABELS,
@@ -26,10 +25,6 @@ const SCENARIO_HINTS: Record<ClinicalScenario, string> = {
 }
 
 export function InputForm({ values, errors, onChange, onSubmit }: Props) {
-  const [openHints, setOpenHints] = useState<Set<string>>(new Set())
-  const toggleHint = (key: string) =>
-    setOpenHints(prev => { const s = new Set(prev); s.has(key) ? s.delete(key) : s.add(key); return s })
-
   const err = (field: keyof IOLInputs) => errors.find(e => e.field === field)?.message
 
   // Показываем метод фиксации: сценарий 1 только при замене, иначе всегда
@@ -82,7 +77,6 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
           {(['AL', 'K1', 'K2', 'ACD', 'aConst', 'targetRef'] as const).map(field => {
             const meta = FIELD_META[field]
             const fieldErr = err(field)
-            const isOpen = openHints.has(field)
             return (
               <div key={field} className="space-y-1">
                 <div className="flex items-center gap-1.5">
@@ -92,16 +86,8 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
                       <span className="ml-1.5 text-xs text-slate-400 font-normal">опционально</span>
                     )}
                   </label>
-                  <button type="button" onClick={() => toggleHint(field)}
-                    className="text-slate-400 hover:text-slate-600 transition-colors">
-                    <HelpCircle size={14} />
-                  </button>
+                  <HintTooltip text={meta.hint} />
                 </div>
-                {isOpen && (
-                  <p className="text-xs text-app-muted bg-app-bg rounded-lg px-3 py-2 border border-app-border">
-                    {meta.hint}
-                  </p>
-                )}
                 <div className="relative">
                   <input id={field} type="text" inputMode="decimal"
                     value={values[field] as string}
@@ -138,13 +124,13 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
             hint="Используется для поправки ELP. ⚠️ Значения — MOCK."
             value={values.ethnicGroup} onChange={v => onChange('ethnicGroup', v)}
             options={Object.entries(ETHNIC_GROUP_LABELS).map(([k, v]) => ({ value: k, label: v }))}
-            openHints={openHints} onToggleHint={toggleHint} />
+            />
 
           <SelectField id="vitreousState" label="Состояние стекловидного тела"
             hint="Влияет на поправку к расчётной силе ИОЛ. ⚠️ Поправки — MOCK."
             value={values.vitreousState} onChange={v => onChange('vitreousState', v)}
             options={Object.entries(VITREOUS_STATE_LABELS).map(([k, v]) => ({ value: k, label: v }))}
-            openHints={openHints} onToggleHint={toggleHint} />
+            />
         </div>
 
         {/* Плотность масла */}
@@ -272,7 +258,7 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
                 hint="Определяет позицию линзы (ELP). Для нестандартных методов поправки — ⚠️ MOCK."
                 value={values.fixationMethod} onChange={v => onChange('fixationMethod', v)}
                 options={Object.entries(FIXATION_METHOD_LABELS).map(([k, v]) => ({ value: k, label: v }))}
-                openHints={openHints} onToggleHint={toggleHint} />
+                />
 
               {/* Расстояние от лимба */}
               {isScleralFix && (
@@ -292,7 +278,7 @@ export function InputForm({ values, errors, onChange, onSubmit }: Props) {
             hint="Определяет позицию линзы (ELP). Для нестандартных методов поправки — ⚠️ MOCK."
             value={values.fixationMethod} onChange={v => onChange('fixationMethod', v)}
             options={Object.entries(FIXATION_METHOD_LABELS).map(([k, v]) => ({ value: k, label: v }))}
-            openHints={openHints} onToggleHint={toggleHint} />
+            />
 
           {isScleralFix && (
             <ScleralDistanceBlock values={values} err={err} onChange={onChange} />
@@ -390,22 +376,15 @@ interface SelectFieldProps {
   id: string; label: string; hint: string; value: string
   onChange: (v: string) => void
   options: { value: string; label: string }[]
-  openHints: Set<string>; onToggleHint: (k: string) => void
 }
 
-function SelectField({ id, label, hint, value, onChange, options, openHints, onToggleHint }: SelectFieldProps) {
+function SelectField({ id, label, hint, value, onChange, options }: SelectFieldProps) {
   return (
     <div className="space-y-1">
       <div className="flex items-center gap-1.5">
         <label htmlFor={id} className="text-sm text-app-text">{label}</label>
-        <button type="button" onClick={() => onToggleHint(id)}
-          className="text-slate-400 hover:text-slate-600 transition-colors">
-          <HelpCircle size={14} />
-        </button>
+        <HintTooltip text={hint} />
       </div>
-      {openHints.has(id) && (
-        <p className="text-xs text-app-muted bg-app-bg rounded-lg px-3 py-2 border border-app-border">{hint}</p>
-      )}
       <div className="relative">
         <select id={id} value={value} onChange={e => onChange(e.target.value)}
           className="w-full appearance-none rounded-xl border border-app-border pl-3 pr-9 py-2.5 text-sm bg-white text-app-text focus:outline-none focus:ring-2 focus:ring-medical-400 focus:border-transparent transition-all">
@@ -416,5 +395,18 @@ function SelectField({ id, label, hint, value, onChange, options, openHints, onT
         </span>
       </div>
     </div>
+  )
+}
+
+// ─── Hint tooltip (hover, no layout shift) ───────────────────────────────────
+
+function HintTooltip({ text }: { text: string }) {
+  return (
+    <span className="relative group inline-flex items-center">
+      <HelpCircle size={14} className="text-slate-400 group-hover:text-slate-600 cursor-help transition-colors" />
+      <span className="pointer-events-none absolute top-5 left-0 z-50 w-60 rounded-xl bg-white border border-app-border shadow-md px-3 py-2 text-xs text-app-muted opacity-0 group-hover:opacity-100 transition-opacity">
+        {text}
+      </span>
+    </span>
   )
 }

@@ -66,11 +66,41 @@ export function ResultsPanel({ result, scenario }: Props) {
         </div>
       </div>
 
-      {/* ── По формулам ──────────────────────────────────────────────────── */}
+      {/* ── По формулам (Abakarov) ───────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-3">
         <FormulaCard result={srkt} />
         <FormulaCard result={abakarov} />
       </div>
+
+      {/* ── Референсные формулы ──────────────────────────────────────────── */}
+      {result.referenceFormulas.length > 0 && (
+        <div className="rounded-xl border border-app-border bg-white overflow-hidden">
+          <p className="text-sm font-medium text-app-muted px-4 py-2.5 border-b border-app-border">
+            Референсные формулы (интактный глаз)
+          </p>
+          <div className="divide-y divide-app-border">
+            {result.referenceFormulas.map(f => (
+              <div key={f.formulaName} className="flex items-center justify-between px-4 py-2.5 gap-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-app-text">{f.formulaName}</span>
+                  {f.isMock && (
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-600">
+                      ~ACD
+                    </span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-semibold text-app-text">{f.power.toFixed(2)} Д</span>
+                  <span className="text-xs text-app-muted ml-2">ELP {f.elp.toFixed(2)} мм</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-app-muted px-4 py-2 border-t border-app-border bg-app-bg">
+            Рассчитаны без поправок на стекловидное тело и метод фиксации — только как ориентир
+          </p>
+        </div>
+      )}
 
       {/* ── Исходные данные (как в оригинальной программе) ───────────────── */}
       <InputSummaryCard summary={inputSummary} scenario={scenario} />

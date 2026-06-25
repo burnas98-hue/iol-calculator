@@ -29,26 +29,36 @@ export function Header() {
           </div>
         </button>
 
-        {user && (
-          <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-2">
+          {user ? (
+            <>
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-600 hover:text-medical-600 hover:bg-medical-50 rounded-lg transition-colors"
+                title="Личный кабинет"
+              >
+                <User size={16} />
+                <span className="hidden sm:inline max-w-[160px] truncate">{user.email}</span>
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="Выйти"
+              >
+                <LogOut size={16} />
+                <span className="hidden sm:inline">Выйти</span>
+              </button>
+            </>
+          ) : (
             <button
-              onClick={() => navigate('/dashboard')}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-600 hover:text-medical-600 hover:bg-medical-50 rounded-lg transition-colors"
-              title="Личный кабинет"
+              onClick={() => navigate('/login')}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-app-muted hover:text-app-text hover:bg-app-bg rounded-lg transition-colors border border-app-border"
             >
               <User size={16} />
-              <span className="hidden sm:inline max-w-[160px] truncate">{user.email}</span>
+              <span>Войти</span>
             </button>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-              title="Выйти"
-            >
-              <LogOut size={16} />
-              <span className="hidden sm:inline">Выйти</span>
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </header>
   )
