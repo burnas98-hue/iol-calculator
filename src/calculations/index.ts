@@ -53,9 +53,12 @@ export function calculateIOL(inputs: IOLNumericInputs): IOLCalculationResult {
   const refBarrett   = calculateBarrettApprox(AL, K1, K2, aConst, inputs.ACD, targetRef)
 
   // ─── 4. Умный выбор формулы для рекомендации ─────────────────────────────
-  // correctionDelta = поправка на стекловидное тело, применяется к ref-формулам тоже
+  // correctionDelta = поправка на стекловидное тело (vitreous), применяется к ref-формулам
   const correctionDelta = srktP - srktRaw.power
 
+  // Abakarov добавляет H+0.56 к переданному ELP, поэтому при нестандартных ELP
+  // (склеральная фиксация) он даёт несовместимые значения.
+  // Используем только референсные формулы (они считают ELP независимо от нашего ELP).
   let recommended: number
   let recommendationBasis: string
 
@@ -72,12 +75,14 @@ export function calculateIOL(inputs: IOLNumericInputs): IOLCalculationResult {
     recommended = round2((srktP + longCorrected) / 2)
     recommendationBasis = `SRK/T + ${nameLong} (длинный глаз)`
   } else {
-    // Нормальный диапазон: текущее поведение
-    recommended = round2((srktP + abakarovP) / 2)
-    recommendationBasis = 'SRK/T + Holladay-like'
+    // Нормальный диапазон: SRK/T + Holladay 1 (независимый ELP, совместим)
+    const holladay1Corrected = refHolladay1.power + correctionDelta
+    recommended = round2((srktP + holladay1Corrected) / 2)
+    recommendationBasis = 'SRK/T + Holladay 1'
   }
 
-  const predRef = predictedRefraction(recommended, AL, K1, K2, elp)
+  // predictedRefraction считаем по srktP — он использует тот же elp что и сама функция
+  const predRef = predictedRefraction(srktP, AL, K1, K2, elp)
   const uncertainty = getUncertainty(effectiveFixation, vitreousState)
 
   // ─── 4б. Предупреждения о нетипичных биометрических значениях ────────────
