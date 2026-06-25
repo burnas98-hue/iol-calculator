@@ -1,6 +1,6 @@
 import { calculateSRKT, elpFromAConstant } from './srkt'
 import { calculateHolladay1Like } from './holladay1'
-import { calculateHofferQ, calculateHolladay1, calculateHaigis } from './reference'
+import { calculateHofferQ, calculateHolladay1, calculateHaigis, calculateBarrettApprox } from './reference'
 import {
   elpByFixation,
   ethnicELPDelta,
@@ -50,11 +50,47 @@ export function calculateIOL(inputs: IOLNumericInputs): IOLCalculationResult {
   const refHofferQ   = calculateHofferQ(AL, K1, K2, aConst, inputs.ACD, targetRef)
   const refHolladay1 = calculateHolladay1(AL, K1, K2, aConst, inputs.ACD, targetRef)
   const refHaigis    = calculateHaigis(AL, K1, K2, aConst, inputs.ACD, targetRef)
+  const refBarrett   = calculateBarrettApprox(AL, K1, K2, aConst, inputs.ACD, targetRef)
 
-  // ─── 4. Рекомендация ─────────────────────────────────────────────────────
-  const recommended = round2((srktP + abakarovP) / 2)
+  // ─── 4. Умный выбор формулы для рекомендации ─────────────────────────────
+  // correctionDelta = поправка на стекловидное тело, применяется к ref-формулам тоже
+  const correctionDelta = srktP - srktRaw.power
+
+  let recommended: number
+  let recommendationBasis: string
+
+  if (AL < 22.0) {
+    // Короткий глаз: Hoffer Q наиболее точна
+    const hofferCorrected = refHofferQ.power + correctionDelta
+    recommended = round2((srktP + hofferCorrected) / 2)
+    recommendationBasis = 'SRK/T + Hoffer Q (короткий глаз)'
+  } else if (AL > 26.0) {
+    // Длинный глаз: Haigis (если есть ACD) или Barrett
+    const refLong = inputs.ACD !== null ? refHaigis : refBarrett
+    const nameLong = inputs.ACD !== null ? 'Haigis' : 'Barrett (approx.)'
+    const longCorrected = refLong.power + correctionDelta
+    recommended = round2((srktP + longCorrected) / 2)
+    recommendationBasis = `SRK/T + ${nameLong} (длинный глаз)`
+  } else {
+    // Нормальный диапазон: текущее поведение
+    recommended = round2((srktP + abakarovP) / 2)
+    recommendationBasis = 'SRK/T + Holladay-like'
+  }
+
   const predRef = predictedRefraction(recommended, AL, K1, K2, elp)
   const uncertainty = getUncertainty(effectiveFixation, vitreousState)
+
+  // ─── 4б. Предупреждения о нетипичных биометрических значениях ────────────
+  const K_avg = (K1 + K2) / 2
+  const biometryWarnings: string[] = []
+  if (AL < 20.0 || AL > 30.0)
+    biometryWarnings.push(`AL ${AL} мм вне типичного диапазона 20–30 мм`)
+  if (K_avg < 38.0 || K_avg > 48.0)
+    biometryWarnings.push(`K ${K_avg.toFixed(2)} Д вне типичного диапазона 38–48 Д`)
+  if (inputs.ACD !== null && (inputs.ACD < 2.0 || inputs.ACD > 4.5))
+    biometryWarnings.push(`ACD ${inputs.ACD} мм вне типичного диапазона 2.0–4.5 мм`)
+  if (aConst < 115.0 || aConst > 122.0)
+    biometryWarnings.push(`A-константа ${aConst} вне типичного диапазона 115–122`)
 
   // ─── 5. Итоговые данные ───────────────────────────────────────────────────
   const vitreousLabel = vitreousState === 'silicone'
@@ -70,11 +106,14 @@ export function calculateIOL(inputs: IOLNumericInputs): IOLCalculationResult {
       { ...refHofferQ,   uncertainty: 0.5 },
       { ...refHolladay1, uncertainty: 0.5 },
       { ...refHaigis,    uncertainty: 0.5 },
+      { ...refBarrett,   uncertainty: 0.5 },
     ],
     recommendedPower: recommended,
+    recommendationBasis,
     predictedRefraction: predRef,
     status: deriveStatus(recommended, AL),
     hasMockData,
+    biometryWarnings,
     inputSummary: {
       AL, K1, K2,
       ACD: inputs.ACD,

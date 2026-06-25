@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { Header } from './components/Header'
 import { Disclaimer } from './components/Disclaimer'
@@ -13,6 +13,16 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import { BookmarkPlus, Download } from 'lucide-react'
 import { downloadReport } from './lib/downloadReport'
+
+const DRAFT_KEY = 'iol_draft_v1'
+
+function loadDraft(): IOLInputs {
+  try {
+    const saved = localStorage.getItem(DRAFT_KEY)
+    if (saved) return { ...DEFAULT_INPUTS, ...JSON.parse(saved) }
+  } catch {}
+  return DEFAULT_INPUTS
+}
 
 const DEFAULT_INPUTS: IOLInputs = {
   scenario: 'dislocation',
@@ -31,7 +41,7 @@ const DEFAULT_INPUTS: IOLInputs = {
 }
 
 function CalculatorPage() {
-  const [inputs, setInputs] = useState<IOLInputs>(DEFAULT_INPUTS)
+  const [inputs, setInputs] = useState<IOLInputs>(loadDraft)
   const [errors, setErrors] = useState<FieldError[]>([])
   const [result, setResult] = useState<IOLCalculationResult | null>(null)
   const [calcError, setCalcError] = useState<string | null>(null)
@@ -40,6 +50,10 @@ function CalculatorPage() {
 
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(inputs))
+  }, [inputs])
 
   function handleChange(field: keyof IOLInputs, value: string | boolean) {
     if (typeof value === 'string') value = value.replace(',', '.')

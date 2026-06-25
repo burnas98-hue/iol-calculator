@@ -78,11 +78,13 @@ export interface FormulaResult {
 export interface IOLCalculationResult {
   srkt: FormulaResult
   abakarov: FormulaResult
-  referenceFormulas: FormulaResult[]   // Hoffer Q, Holladay 1, Haigis
+  referenceFormulas: FormulaResult[]   // Hoffer Q, Holladay 1, Haigis, Barrett
   recommendedPower: number
+  recommendationBasis: string          // какие формулы использовались для рекомендации
   predictedRefraction: number
   status: ResultStatus
   hasMockData: boolean
+  biometryWarnings: string[]           // нетипичные значения (не блокирующие)
   inputSummary: InputSummary
 }
 

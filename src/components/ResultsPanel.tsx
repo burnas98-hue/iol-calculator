@@ -1,4 +1,4 @@
-import { CheckCircle, AlertCircle, TrendingDown, TrendingUp, FlaskConical } from 'lucide-react'
+import { CheckCircle, AlertCircle, TrendingDown, TrendingUp, FlaskConical, TriangleAlert } from 'lucide-react'
 import type { IOLCalculationResult, ResultStatus, FormulaResult } from '../types'
 import { SCENARIO_LABELS } from '../data/referenceRanges'
 import { cn } from './ui/cn'
@@ -9,10 +9,23 @@ interface Props {
 }
 
 export function ResultsPanel({ result, scenario }: Props) {
-  const { srkt, abakarov, recommendedPower, predictedRefraction, status, hasMockData, inputSummary } = result
+  const { srkt, abakarov, recommendedPower, recommendationBasis, predictedRefraction, status, hasMockData, biometryWarnings, inputSummary } = result
 
   return (
     <div className="space-y-4">
+      {/* ── Предупреждения о нетипичных значениях ───────────────────────── */}
+      {biometryWarnings.length > 0 && (
+        <div className="flex gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <TriangleAlert size={16} className="text-amber-500 mt-0.5 shrink-0" />
+          <div className="space-y-0.5">
+            <p className="text-sm font-semibold text-amber-800">Нетипичные значения</p>
+            {biometryWarnings.map(w => (
+              <p key={w} className="text-xs text-amber-700">{w}</p>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Mock-предупреждение ──────────────────────────────────────────── */}
       {hasMockData && (
         <div className="flex gap-2.5 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
@@ -43,6 +56,9 @@ export function ResultsPanel({ result, scenario }: Props) {
                 ±{srkt.uncertainty.toFixed(2)} Д
               </span>
               {hasMockData && <span className="text-orange-400 ml-1">⚠</span>}
+            </p>
+            <p className="text-xs text-slate-400 mt-1">
+              {recommendationBasis}
             </p>
           </div>
           <StatusBadge status={status} />

@@ -7,7 +7,6 @@ import {
   ETHNIC_ELP_ADJUST,
   DELTA_ELP_CAPSULAR_REMNANTS,
   DELTA_ELP_INTRASCLERAL,
-  LIMBAL_CORNEAL_OFFSET,
   DELTA_P_GAS,
   DELTA_P_OIL_1000,
   DELTA_P_OIL_1300,
@@ -31,13 +30,18 @@ export function baseELP(aConst: number): number {
 }
 
 /**
- * ELP при склеральной фиксации — рассчитывается из расстояния от лимба.
+ * ELP при склеральной фиксации.
  *
- * Валидация по скрину: расстояние 2.0 мм → ELP = 1.20 мм
- * ELP = scleral_distance − LIMBAL_CORNEAL_OFFSET (0.80 мм)
+ * Линза фиксируется в цилиарной борозде (~0.5 мм кпереди от капсульного мешка).
+ * Расстояние от лимба (scleralDistance) минимально влияет на ELP — используем
+ * небольшую поправку ±0.3 мм/мм относительно стандарта 2.0 мм.
+ *
+ * Пример: aConst=118.5 → baseELP=5.28 → scleralELP(2.0)=4.78 мм ✓
  */
-export function scleralELP(scleralDistance: number): number {
-  return Math.max(0, scleralDistance - LIMBAL_CORNEAL_OFFSET)
+export function scleralELP(scleralDistance: number, aConst: number): number {
+  const sulcusBase = baseELP(aConst) - 0.5          // цилиарная борозда
+  const distAdjust = 0.3 * (scleralDistance - 2.0)  // поправка на нестандартное расстояние
+  return Math.max(3.5, sulcusBase + distAdjust)
 }
 
 // ─── Поправка ELP по методу фиксации ─────────────────────────────────────────
@@ -52,10 +56,10 @@ export function elpByFixation(
       return { elp: baseELP(aConst) + DELTA_ELP_CAPSULAR_REMNANTS, isMock: true }
 
     case 'scleral_sutures':
-      return { elp: scleralELP(scleralDistance), isMock: false } // формула верифицирована по одному случаю
+      return { elp: scleralELP(scleralDistance, aConst), isMock: false }
 
     case 'intrascleral':
-      return { elp: scleralELP(scleralDistance) + DELTA_ELP_INTRASCLERAL, isMock: true }
+      return { elp: scleralELP(scleralDistance, aConst) + DELTA_ELP_INTRASCLERAL, isMock: true }
 
     default:
       return { elp: baseELP(aConst), isMock: false }

@@ -106,7 +106,7 @@ const HIDDEN_INPUT_FIELDS = new Set(['inputSummary', 'disloc_powerKnown'])
 // Поля результата, которые скрываем
 const HIDDEN_RESULT_SUFFIXES = ['.isMock', '.formulaName', '.uncertainty']
 const HIDDEN_RESULT_PREFIXES = ['inputSummary.']
-const HIDDEN_RESULT_EXACT = new Set(['hasMockData'])
+const HIDDEN_RESULT_EXACT = new Set(['hasMockData', 'biometryWarnings', 'recommendationBasis'])
 
 function isHiddenResultKey(key: string) {
   if (HIDDEN_RESULT_EXACT.has(key)) return true

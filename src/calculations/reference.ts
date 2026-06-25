@@ -97,6 +97,34 @@ export function calculateHaigis(
   return { power: vergence(AL, K, elp, target), elp: round2(elp), formulaName: 'Haigis', isMock }
 }
 
+// ─── Barrett Universal II (approximation) ──────────────────────────────────
+
+/**
+ * Simplified approximation based on:
+ * Barrett GD. J Cataract Refract Surg. 1993;19(6):713–720.
+ * AL correction approximated from Barrett UII methodology (без учёта lens thickness).
+ * ⚠️ Не является точной реализацией Barrett UII.
+ */
+function elpBarrettApprox(aConst: number, K_avg: number, AL: number): number {
+  const LF = (aConst - 118.84) / 1.36
+  const R = 337.5 / K_avg
+  const H = R - Math.sqrt(Math.max(0, R * R - 36))  // half-chord 6mm
+  // Нелинейная поправка на AL (приближение AL-коррекции Barrett UII)
+  let ALcorr = 0
+  if (AL < 22.0)      ALcorr =  0.15 * (22.0 - AL)
+  else if (AL > 24.5) ALcorr = -0.08 * (AL - 24.5)
+  return LF + H + 0.5 + ALcorr
+}
+
+export function calculateBarrettApprox(
+  AL: number, K1: number, K2: number,
+  aConst: number, _ACD: number | null, target: number,
+): { power: number; elp: number; formulaName: string; isMock: boolean } {
+  const K = (K1 + K2) / 2
+  const elp = elpBarrettApprox(aConst, AL, K)
+  return { power: vergence(AL, K, elp, target), elp: round2(elp), formulaName: 'Barrett (approx.)', isMock: true }
+}
+
 function round2(v: number): number {
   return Math.round(v * 100) / 100
 }
